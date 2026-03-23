@@ -20,11 +20,10 @@ import {
   ChevronDown,
   ChevronUp,
   Download,
+  Eye,
+  EyeOff,
   Loader2,
-  LogIn,
   LogOut,
-  RefreshCw,
-  ShieldAlert,
   ShieldCheck,
   Trash2,
 } from "lucide-react";
@@ -33,16 +32,13 @@ import { useState } from "react";
 import { OrderCategory, OrderStatus } from "../backend.d";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
-import { useInternetIdentity } from "../hooks/useInternetIdentity";
 import {
-  useClaimAdmin,
   useDeleteOrder,
   useGetAllOrders,
-  useHasAnyAdmin,
-  useIsAdmin,
-  useResetAdmin,
   useUpdateOrderStatus,
 } from "../hooks/useQueries";
+
+const ADMIN_PASSWORD = "vishwakarma enterprise";
 
 const STATUS_COLORS: Record<OrderStatus, string> = {
   [OrderStatus.pending]: "bg-yellow-100 text-yellow-800 border-yellow-200",
@@ -113,22 +109,30 @@ function exportToCSV(orders: any[]) {
 }
 
 export default function AdminPage() {
-  const { login, clear, identity, loginStatus } = useInternetIdentity();
-  const isAdminQuery = useIsAdmin();
-  const hasAnyAdminQuery = useHasAnyAdmin();
-  const claimAdmin = useClaimAdmin();
-  const resetAdmin = useResetAdmin();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+
   const ordersQuery = useGetAllOrders();
   const updateStatus = useUpdateOrderStatus();
   const deleteOrder = useDeleteOrder();
 
   const [updatingId, setUpdatingId] = useState<bigint | null>(null);
   const [deletingId, setDeletingId] = useState<bigint | null>(null);
-  const [resetDone, setResetDone] = useState(false);
   const [expandedId, setExpandedId] = useState<bigint | null>(null);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterCategory, setFilterCategory] = useState<string>("all");
+
+  const handleLogin = () => {
+    if (password === ADMIN_PASSWORD) {
+      setIsLoggedIn(true);
+      setError("");
+    } else {
+      setError("Incorrect password. Please try again.");
+    }
+  };
 
   const handleStatusChange = async (orderId: bigint, status: OrderStatus) => {
     setUpdatingId(orderId);
@@ -149,18 +153,7 @@ export default function AdminPage() {
     }
   };
 
-  const handleClaimAdmin = async () => {
-    await claimAdmin.mutateAsync();
-  };
-
-  const handleResetAndClaim = async () => {
-    await resetAdmin.mutateAsync();
-    setResetDone(true);
-    await claimAdmin.mutateAsync();
-    setResetDone(false);
-  };
-
-  if (!identity) {
+  if (!isLoggedIn) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -168,180 +161,67 @@ export default function AdminPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="max-w-md w-full text-center"
+            className="max-w-md w-full"
           >
-            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-              <ShieldAlert className="h-8 w-8 text-primary" />
-            </div>
-            <h2 className="font-display text-2xl font-bold text-foreground mb-3">
-              Admin Access Required
-            </h2>
-            <p className="text-muted-foreground mb-8">
-              Please log in with your Internet Identity to access the dashboard.
-            </p>
-            <Button
-              onClick={login}
-              disabled={loginStatus === "logging-in"}
-              className="bg-primary hover:bg-primary/90 text-white px-8"
-              data-ocid="admin.primary_button"
-            >
-              {loginStatus === "logging-in" ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Logging
-                  in...
-                </>
-              ) : (
-                <>
-                  <LogIn className="mr-2 h-4 w-4" /> Login to Admin
-                </>
-              )}
-            </Button>
-          </motion.div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  if (isAdminQuery.isLoading || hasAnyAdminQuery.isLoading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="flex items-center justify-center py-24">
-          <div
-            className="flex items-center gap-3 text-muted-foreground"
-            data-ocid="admin.loading_state"
-          >
-            <Loader2 className="h-5 w-5 animate-spin" />
-            <span>Verifying admin access...</span>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  if (!isAdminQuery.data) {
-    if (hasAnyAdminQuery.data === false) {
-      return (
-        <div className="min-h-screen bg-background">
-          <Header />
-          <main className="flex items-center justify-center py-24 px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="max-w-md w-full text-center"
-              data-ocid="admin.panel"
-            >
-              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                <ShieldCheck className="h-10 w-10 text-primary" />
-              </div>
-              <h2 className="font-display text-2xl font-bold text-foreground mb-3">
-                Welcome, Virendra Vishwakarma!
-              </h2>
-              <p className="text-muted-foreground mb-8">
-                No admin has been set up yet. Click below to claim admin access.
-              </p>
-              {claimAdmin.isError && (
-                <div
-                  className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm"
-                  data-ocid="admin.error_state"
-                >
-                  Failed to claim admin. Please try again.
+            <div className="bg-white border border-border rounded-2xl shadow-xl p-8">
+              <div className="text-center mb-8">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <ShieldCheck className="h-8 w-8 text-primary" />
                 </div>
-              )}
-              <div className="flex flex-col gap-3">
+                <h2 className="font-display text-2xl font-bold text-foreground">
+                  Admin Login
+                </h2>
+                <p className="text-muted-foreground text-sm mt-2">
+                  Vishwakarma Design Studio — Admin Panel
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label
+                    htmlFor="admin-password"
+                    className="block text-sm font-medium text-foreground mb-1.5"
+                  >
+                    Password
+                  </label>
+                  <div className="relative">
+                    <Input
+                      id="admin-password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Enter admin password"
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        setError("");
+                      }}
+                      onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                      className={`pr-10 ${error ? "border-red-400 focus-visible:ring-red-400" : ""}`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+                  {error && (
+                    <p className="text-red-500 text-xs mt-1.5">{error}</p>
+                  )}
+                </div>
+
                 <Button
-                  onClick={handleClaimAdmin}
-                  disabled={claimAdmin.isPending}
-                  className="bg-primary hover:bg-primary/90 text-white px-8 py-3 text-base font-semibold"
+                  onClick={handleLogin}
+                  className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-2.5"
                   data-ocid="admin.primary_button"
                 >
-                  {claimAdmin.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />{" "}
-                      Claiming...
-                    </>
-                  ) : (
-                    <>
-                      <ShieldCheck className="mr-2 h-5 w-5" /> Claim Admin
-                      Access
-                    </>
-                  )}
-                </Button>
-                <Button
-                  onClick={clear}
-                  variant="outline"
-                  className="border-primary text-primary"
-                  data-ocid="admin.secondary_button"
-                >
-                  <LogOut className="mr-2 h-4 w-4" /> Logout
+                  Login to Admin Panel
                 </Button>
               </div>
-            </motion.div>
-          </main>
-          <Footer />
-        </div>
-      );
-    }
-
-    return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="flex items-center justify-center py-24 px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="max-w-md w-full text-center"
-            data-ocid="admin.error_state"
-          >
-            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <ShieldAlert className="h-8 w-8 text-orange-600" />
-            </div>
-            <h2 className="font-display text-2xl font-bold text-foreground mb-3">
-              Access Denied
-            </h2>
-            <p className="text-muted-foreground mb-2">
-              This account does not have admin privileges.
-            </p>
-            <p className="text-sm text-muted-foreground mb-8">
-              If you are the owner (Virendra Vishwakarma), click{" "}
-              <strong>Reset &amp; Claim Admin</strong> below.
-            </p>
-            {(resetAdmin.isError || claimAdmin.isError) && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                Something went wrong. Please try again.
-              </div>
-            )}
-            <div className="flex flex-col gap-3">
-              <Button
-                onClick={handleResetAndClaim}
-                disabled={
-                  resetAdmin.isPending || claimAdmin.isPending || resetDone
-                }
-                className="bg-primary hover:bg-primary/90 text-white px-8 py-3 text-base font-semibold"
-                data-ocid="admin.primary_button"
-              >
-                {resetAdmin.isPending || claimAdmin.isPending || resetDone ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Setting up
-                    admin...
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className="mr-2 h-5 w-5" /> Reset &amp; Claim
-                    Admin
-                  </>
-                )}
-              </Button>
-              <Button
-                onClick={clear}
-                variant="outline"
-                className="border-primary text-primary"
-                data-ocid="admin.secondary_button"
-              >
-                <LogOut className="mr-2 h-4 w-4" /> Logout
-              </Button>
             </div>
           </motion.div>
         </main>
@@ -404,7 +284,10 @@ export default function AdminPage() {
                   <Download className="mr-2 h-4 w-4" /> Export CSV
                 </Button>
                 <Button
-                  onClick={clear}
+                  onClick={() => {
+                    setIsLoggedIn(false);
+                    setPassword("");
+                  }}
                   variant="outline"
                   className="border-border text-muted-foreground hover:text-foreground"
                   data-ocid="admin.secondary_button"
@@ -457,6 +340,7 @@ export default function AdminPage() {
             {/* Search & Filters */}
             <div className="flex flex-wrap gap-3 mb-6">
               <Input
+                id="admin-password"
                 placeholder="Search by name, phone, or email..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
