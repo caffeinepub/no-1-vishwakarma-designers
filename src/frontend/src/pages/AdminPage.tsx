@@ -16,6 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ChevronDown,
   ChevronUp,
@@ -39,6 +40,7 @@ import {
 } from "../hooks/useQueries";
 
 const ADMIN_PASSWORD = "vishwakarma enterprise";
+const ADMIN_PIN = "970293";
 
 const STATUS_COLORS: Record<OrderStatus, string> = {
   [OrderStatus.pending]: "bg-yellow-100 text-yellow-800 border-yellow-200",
@@ -111,8 +113,10 @@ function exportToCSV(orders: any[]) {
 export default function AdminPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [password, setPassword] = useState("");
+  const [pin, setPin] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [loginTab, setLoginTab] = useState("password");
 
   const ordersQuery = useGetAllOrders();
   const updateStatus = useUpdateOrderStatus();
@@ -126,11 +130,20 @@ export default function AdminPage() {
   const [filterCategory, setFilterCategory] = useState<string>("all");
 
   const handleLogin = () => {
-    if (password === ADMIN_PASSWORD) {
-      setIsLoggedIn(true);
-      setError("");
+    if (loginTab === "password") {
+      if (password === ADMIN_PASSWORD) {
+        setIsLoggedIn(true);
+        setError("");
+      } else {
+        setError("Incorrect password. Please try again.");
+      }
     } else {
-      setError("Incorrect password. Please try again.");
+      if (pin === ADMIN_PIN) {
+        setIsLoggedIn(true);
+        setError("");
+      } else {
+        setError("Incorrect PIN. Please try again.");
+      }
     }
   };
 
@@ -176,52 +189,111 @@ export default function AdminPage() {
                 </p>
               </div>
 
-              <div className="space-y-4">
-                <div>
-                  <label
-                    htmlFor="admin-password"
-                    className="block text-sm font-medium text-foreground mb-1.5"
-                  >
+              <Tabs
+                value={loginTab}
+                onValueChange={(v) => {
+                  setLoginTab(v);
+                  setError("");
+                }}
+              >
+                <TabsList className="w-full mb-5" data-ocid="admin.tab">
+                  <TabsTrigger value="password" className="flex-1">
                     Password
-                  </label>
-                  <div className="relative">
+                  </TabsTrigger>
+                  <TabsTrigger value="pin" className="flex-1">
+                    PIN Code
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="password" className="space-y-4">
+                  <div>
+                    <label
+                      htmlFor="admin-password"
+                      className="block text-sm font-medium text-foreground mb-1.5"
+                    >
+                      Password
+                    </label>
+                    <div className="relative">
+                      <Input
+                        id="admin-password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Enter admin password"
+                        value={password}
+                        onChange={(e) => {
+                          setPassword(e.target.value);
+                          setError("");
+                        }}
+                        onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                        className={`pr-10 ${error ? "border-red-400 focus-visible:ring-red-400" : ""}`}
+                        data-ocid="admin.input"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((v) => !v)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="pin" className="space-y-4">
+                  <div>
+                    <label
+                      htmlFor="admin-pin"
+                      className="block text-sm font-medium text-foreground mb-1.5"
+                    >
+                      6-Digit PIN
+                    </label>
                     <Input
-                      id="admin-password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Enter admin password"
-                      value={password}
+                      id="admin-pin"
+                      type="password"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength={6}
+                      placeholder="● ● ● ● ● ●"
+                      value={pin}
                       onChange={(e) => {
-                        setPassword(e.target.value);
+                        const val = e.target.value
+                          .replace(/\D/g, "")
+                          .slice(0, 6);
+                        setPin(val);
                         setError("");
                       }}
                       onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-                      className={`pr-10 ${error ? "border-red-400 focus-visible:ring-red-400" : ""}`}
+                      className={`text-center tracking-[0.5em] text-lg font-bold ${
+                        error ? "border-red-400 focus-visible:ring-red-400" : ""
+                      }`}
+                      data-ocid="admin.input"
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword((v) => !v)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </button>
+                    <p className="text-xs text-muted-foreground mt-1.5 text-center">
+                      Enter your 6-digit numeric PIN
+                    </p>
                   </div>
-                  {error && (
-                    <p className="text-red-500 text-xs mt-1.5">{error}</p>
-                  )}
-                </div>
+                </TabsContent>
+              </Tabs>
 
-                <Button
-                  onClick={handleLogin}
-                  className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-2.5"
-                  data-ocid="admin.primary_button"
+              {error && (
+                <p
+                  className="text-red-500 text-xs mt-2 mb-1"
+                  data-ocid="admin.error_state"
                 >
-                  Login to Admin Panel
-                </Button>
-              </div>
+                  {error}
+                </p>
+              )}
+
+              <Button
+                onClick={handleLogin}
+                className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-2.5 mt-4"
+                data-ocid="admin.primary_button"
+              >
+                Login to Admin Panel
+              </Button>
             </div>
           </motion.div>
         </main>
@@ -287,6 +359,7 @@ export default function AdminPage() {
                   onClick={() => {
                     setIsLoggedIn(false);
                     setPassword("");
+                    setPin("");
                   }}
                   variant="outline"
                   className="border-border text-muted-foreground hover:text-foreground"
@@ -340,11 +413,11 @@ export default function AdminPage() {
             {/* Search & Filters */}
             <div className="flex flex-wrap gap-3 mb-6">
               <Input
-                id="admin-password"
                 placeholder="Search by name, phone, or email..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full sm:w-72"
+                data-ocid="admin.search_input"
               />
               <Select value={filterStatus} onValueChange={setFilterStatus}>
                 <SelectTrigger className="w-40">
