@@ -47,6 +47,51 @@ const CATEGORY_LABELS: Record<string, { label: string; description: string }> =
       description:
         "Boost productivity with a professionally designed workspace.",
     },
+    modularWork: {
+      label: "Modular Work",
+      description:
+        "Custom modular furniture and fittings designed to maximize your space.",
+    },
+    modularWardrobe: {
+      label: "Modular Wardrobe",
+      description:
+        "Sleek modular wardrobes with smart storage solutions for every room.",
+    },
+    lighting: {
+      label: "Lighting Design",
+      description:
+        "Ambient, task, and accent lighting to transform the mood of any space.",
+    },
+    flooring: {
+      label: "Flooring",
+      description:
+        "Premium flooring options — tiles, marble, wood, and more for every style.",
+    },
+    electricalWork: {
+      label: "Electrical Work",
+      description:
+        "Safe, professional electrical fittings and wiring for modern interiors.",
+    },
+    civilWork: {
+      label: "Civil Work",
+      description:
+        "Structural and civil modifications handled by expert craftsmen.",
+    },
+    falseCeiling: {
+      label: "False Ceiling",
+      description:
+        "Elegant false ceiling designs with lighting integration for a premium look.",
+    },
+    wallDesign: {
+      label: "Wall Design",
+      description:
+        "Textured finishes, panels, and feature walls that define your space.",
+    },
+    painting: {
+      label: "Painting",
+      description:
+        "Premium interior painting with expert color consultation included.",
+    },
   };
 
 const CATEGORY_MAP: Record<string, OrderCategory> = {
@@ -55,6 +100,15 @@ const CATEGORY_MAP: Record<string, OrderCategory> = {
   kitchen: OrderCategory.kitchen,
   bathroom: OrderCategory.bathroom,
   office: OrderCategory.office,
+  modularWork: OrderCategory.modularWork,
+  modularWardrobe: OrderCategory.modularWardrobe,
+  lighting: OrderCategory.lighting,
+  flooring: OrderCategory.flooring,
+  electricalWork: OrderCategory.electricalWork,
+  civilWork: OrderCategory.civilWork,
+  falseCeiling: OrderCategory.falseCeiling,
+  wallDesign: OrderCategory.wallDesign,
+  painting: OrderCategory.painting,
 };
 
 const BUDGET_OPTIONS = [

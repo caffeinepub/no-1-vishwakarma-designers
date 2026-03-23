@@ -90,6 +90,14 @@ export class ExternalBlob {
     }
 }
 export type Time = bigint;
+export interface Feedback {
+    id: bigint;
+    name: string;
+    comment: string;
+    approved: boolean;
+    timestamp: Time;
+    rating: bigint;
+}
 export interface Order {
     id: bigint;
     status: OrderStatus;
@@ -112,8 +120,17 @@ export enum OrderCategory {
     bedroom = "bedroom",
     bathroom = "bathroom",
     office = "office",
+    painting = "painting",
     kitchen = "kitchen",
-    livingRoom = "livingRoom"
+    falseCeiling = "falseCeiling",
+    lighting = "lighting",
+    livingRoom = "livingRoom",
+    civilWork = "civilWork",
+    wallDesign = "wallDesign",
+    electricalWork = "electricalWork",
+    flooring = "flooring",
+    modularWardrobe = "modularWardrobe",
+    modularWork = "modularWork"
 }
 export enum OrderStatus {
     pending = "pending",
@@ -128,15 +145,21 @@ export enum UserRole {
 export interface backendInterface {
     _initializeAccessControlWithSecret(userSecret: string): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
+    claimAdmin(): Promise<boolean>;
+    getAllFeedbacks(): Promise<Array<Feedback>>;
     getAllOrders(): Promise<Array<Order>>;
+    getApprovedFeedbacks(): Promise<Array<Feedback>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getMyOrders(): Promise<Array<Order>>;
     getOrder(orderId: bigint): Promise<Order | null>;
     getOrdersByCategory(category: OrderCategory): Promise<Array<Order>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
+    hasAnyAdmin(): Promise<boolean>;
     isCallerAdmin(): Promise<boolean>;
+    resetAdmin(): Promise<boolean>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
+    submitFeedback(name: string, rating: bigint, comment: string): Promise<bigint>;
     submitOrder(name: string, phone: string, email: string, address: string, category: OrderCategory, budget: string, notes: string): Promise<bigint>;
     updateOrderStatus(orderId: bigint, status: OrderStatus): Promise<void>;
 }
@@ -171,6 +194,34 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async claimAdmin(): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.claimAdmin();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.claimAdmin();
+            return result;
+        }
+    }
+    async getAllFeedbacks(): Promise<Array<Feedback>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getAllFeedbacks();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getAllFeedbacks();
+            return result;
+        }
+    }
     async getAllOrders(): Promise<Array<Order>> {
         if (this.processError) {
             try {
@@ -183,6 +234,20 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.getAllOrders();
             return from_candid_vec_n3(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getApprovedFeedbacks(): Promise<Array<Feedback>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getApprovedFeedbacks();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getApprovedFeedbacks();
+            return result;
         }
     }
     async getCallerUserProfile(): Promise<UserProfile | null> {
@@ -269,6 +334,20 @@ export class Backend implements backendInterface {
             return from_candid_opt_n10(this._uploadFile, this._downloadFile, result);
         }
     }
+    async hasAnyAdmin(): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.hasAnyAdmin();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.hasAnyAdmin();
+            return result;
+        }
+    }
     async isCallerAdmin(): Promise<boolean> {
         if (this.processError) {
             try {
@@ -283,6 +362,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async resetAdmin(): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.resetAdmin();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.resetAdmin();
+            return result;
+        }
+    }
     async saveCallerUserProfile(arg0: UserProfile): Promise<void> {
         if (this.processError) {
             try {
@@ -294,6 +387,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.saveCallerUserProfile(arg0);
+            return result;
+        }
+    }
+    async submitFeedback(arg0: string, arg1: bigint, arg2: string): Promise<bigint> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.submitFeedback(arg0, arg1, arg2);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.submitFeedback(arg0, arg1, arg2);
             return result;
         }
     }
@@ -408,11 +515,29 @@ function from_candid_variant_n9(_uploadFile: (file: ExternalBlob) => Promise<Uin
 } | {
     office: null;
 } | {
+    painting: null;
+} | {
     kitchen: null;
 } | {
+    falseCeiling: null;
+} | {
+    lighting: null;
+} | {
     livingRoom: null;
+} | {
+    civilWork: null;
+} | {
+    wallDesign: null;
+} | {
+    electricalWork: null;
+} | {
+    flooring: null;
+} | {
+    modularWardrobe: null;
+} | {
+    modularWork: null;
 }): OrderCategory {
-    return "bedroom" in value ? OrderCategory.bedroom : "bathroom" in value ? OrderCategory.bathroom : "office" in value ? OrderCategory.office : "kitchen" in value ? OrderCategory.kitchen : "livingRoom" in value ? OrderCategory.livingRoom : value;
+    return "bedroom" in value ? OrderCategory.bedroom : "bathroom" in value ? OrderCategory.bathroom : "office" in value ? OrderCategory.office : "painting" in value ? OrderCategory.painting : "kitchen" in value ? OrderCategory.kitchen : "falseCeiling" in value ? OrderCategory.falseCeiling : "lighting" in value ? OrderCategory.lighting : "livingRoom" in value ? OrderCategory.livingRoom : "civilWork" in value ? OrderCategory.civilWork : "wallDesign" in value ? OrderCategory.wallDesign : "electricalWork" in value ? OrderCategory.electricalWork : "flooring" in value ? OrderCategory.flooring : "modularWardrobe" in value ? OrderCategory.modularWardrobe : "modularWork" in value ? OrderCategory.modularWork : value;
 }
 function from_candid_vec_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Order>): Array<Order> {
     return value.map((x)=>from_candid_Order_n4(_uploadFile, _downloadFile, x));
@@ -433,9 +558,27 @@ function to_candid_variant_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint
 } | {
     office: null;
 } | {
+    painting: null;
+} | {
     kitchen: null;
 } | {
+    falseCeiling: null;
+} | {
+    lighting: null;
+} | {
     livingRoom: null;
+} | {
+    civilWork: null;
+} | {
+    wallDesign: null;
+} | {
+    electricalWork: null;
+} | {
+    flooring: null;
+} | {
+    modularWardrobe: null;
+} | {
+    modularWork: null;
 } {
     return value == OrderCategory.bedroom ? {
         bedroom: null
@@ -443,10 +586,28 @@ function to_candid_variant_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint
         bathroom: null
     } : value == OrderCategory.office ? {
         office: null
+    } : value == OrderCategory.painting ? {
+        painting: null
     } : value == OrderCategory.kitchen ? {
         kitchen: null
+    } : value == OrderCategory.falseCeiling ? {
+        falseCeiling: null
+    } : value == OrderCategory.lighting ? {
+        lighting: null
     } : value == OrderCategory.livingRoom ? {
         livingRoom: null
+    } : value == OrderCategory.civilWork ? {
+        civilWork: null
+    } : value == OrderCategory.wallDesign ? {
+        wallDesign: null
+    } : value == OrderCategory.electricalWork ? {
+        electricalWork: null
+    } : value == OrderCategory.flooring ? {
+        flooring: null
+    } : value == OrderCategory.modularWardrobe ? {
+        modularWardrobe: null
+    } : value == OrderCategory.modularWork ? {
+        modularWork: null
     } : value;
 }
 function to_candid_variant_n17(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: OrderStatus): {

@@ -76,6 +76,21 @@ export function useUpdateOrderStatus() {
   });
 }
 
+export function useDeleteOrder() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (orderId: bigint) => {
+      if (!actor) throw new Error("Not connected");
+      const extActor = actor as any;
+      return extActor.deleteOrder(orderId) as Promise<boolean>;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["allOrders"] });
+    },
+  });
+}
+
 export function useIsAdmin() {
   const { actor, isFetching } = useActor();
   return useQuery({
@@ -85,5 +100,50 @@ export function useIsAdmin() {
       return actor.isCallerAdmin();
     },
     enabled: !!actor && !isFetching,
+  });
+}
+
+export function useHasAnyAdmin() {
+  const { actor, isFetching } = useActor();
+  return useQuery({
+    queryKey: ["hasAnyAdmin"],
+    queryFn: async () => {
+      if (!actor) return true;
+      const extActor = actor as any;
+      return extActor.hasAnyAdmin() as Promise<boolean>;
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useClaimAdmin() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      if (!actor) throw new Error("Not connected");
+      const extActor = actor as any;
+      return extActor.claimAdmin() as Promise<boolean>;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["isAdmin"] });
+      queryClient.invalidateQueries({ queryKey: ["hasAnyAdmin"] });
+    },
+  });
+}
+
+export function useResetAdmin() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      if (!actor) throw new Error("Not connected");
+      const extActor = actor as any;
+      return extActor.resetAdmin() as Promise<boolean>;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["isAdmin"] });
+      queryClient.invalidateQueries({ queryKey: ["hasAnyAdmin"] });
+    },
   });
 }

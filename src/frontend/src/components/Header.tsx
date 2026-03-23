@@ -4,6 +4,11 @@ import { Menu, Phone, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 
+const GOLD_BTN_STYLE = {
+  background:
+    "linear-gradient(135deg, oklch(0.72 0.18 52), oklch(0.60 0.22 42))",
+};
+
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -20,14 +25,11 @@ export default function Header() {
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <Link to="/" className="flex-shrink-0" data-ocid="header.link">
-            <div className="flex flex-col leading-tight">
-              <span className="text-xs font-bold tracking-[0.25em] text-primary uppercase">
-                NO. 1
-              </span>
-              <span className="text-sm md:text-base font-display font-bold text-foreground tracking-wide leading-tight">
-                VISHWAKARMA DESIGNERS
-              </span>
-            </div>
+            <img
+              src="/assets/generated/vishwakarma-design-studio-logo-transparent.dim_600x160.png"
+              alt="Vishwakarma Design Studio"
+              className="h-11 md:h-14 w-auto object-contain"
+            />
           </Link>
 
           {/* Desktop Nav */}
@@ -56,7 +58,8 @@ export default function Header() {
             <Link to="/order/$category" params={{ category: "livingRoom" }}>
               <Button
                 size="sm"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                className="text-white font-semibold border-0"
+                style={GOLD_BTN_STYLE}
                 data-ocid="header.primary_button"
               >
                 Order Now
@@ -105,7 +108,10 @@ export default function Header() {
                 params={{ category: "livingRoom" }}
                 onClick={() => setMobileOpen(false)}
               >
-                <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
+                <Button
+                  className="w-full text-white font-semibold border-0"
+                  style={GOLD_BTN_STYLE}
+                >
                   Order Now
                 </Button>
               </Link>

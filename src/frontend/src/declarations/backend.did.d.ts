@@ -10,6 +10,14 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
+export interface Feedback {
+  'id' : bigint,
+  'name' : string,
+  'comment' : string,
+  'approved' : boolean,
+  'timestamp' : Time,
+  'rating' : bigint,
+}
 export interface Order {
   'id' : bigint,
   'status' : OrderStatus,
@@ -26,8 +34,17 @@ export interface Order {
 export type OrderCategory = { 'bedroom' : null } |
   { 'bathroom' : null } |
   { 'office' : null } |
+  { 'painting' : null } |
   { 'kitchen' : null } |
-  { 'livingRoom' : null };
+  { 'falseCeiling' : null } |
+  { 'lighting' : null } |
+  { 'livingRoom' : null } |
+  { 'civilWork' : null } |
+  { 'wallDesign' : null } |
+  { 'electricalWork' : null } |
+  { 'flooring' : null } |
+  { 'modularWardrobe' : null } |
+  { 'modularWork' : null };
 export type OrderStatus = { 'pending' : null } |
   { 'completed' : null } |
   { 'inProgress' : null };
@@ -43,15 +60,21 @@ export type UserRole = { 'admin' : null } |
 export interface _SERVICE {
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'claimAdmin' : ActorMethod<[], boolean>,
+  'getAllFeedbacks' : ActorMethod<[], Array<Feedback>>,
   'getAllOrders' : ActorMethod<[], Array<Order>>,
+  'getApprovedFeedbacks' : ActorMethod<[], Array<Feedback>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getMyOrders' : ActorMethod<[], Array<Order>>,
   'getOrder' : ActorMethod<[bigint], [] | [Order]>,
   'getOrdersByCategory' : ActorMethod<[OrderCategory], Array<Order>>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
+  'hasAnyAdmin' : ActorMethod<[], boolean>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
+  'resetAdmin' : ActorMethod<[], boolean>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
+  'submitFeedback' : ActorMethod<[string, bigint, string], bigint>,
   'submitOrder' : ActorMethod<
     [string, string, string, string, OrderCategory, string, string],
     bigint

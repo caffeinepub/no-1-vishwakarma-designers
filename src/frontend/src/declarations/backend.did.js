@@ -13,18 +13,35 @@ export const UserRole = IDL.Variant({
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
+export const Time = IDL.Int;
+export const Feedback = IDL.Record({
+  'id' : IDL.Nat,
+  'name' : IDL.Text,
+  'comment' : IDL.Text,
+  'approved' : IDL.Bool,
+  'timestamp' : Time,
+  'rating' : IDL.Nat,
+});
 export const OrderStatus = IDL.Variant({
   'pending' : IDL.Null,
   'completed' : IDL.Null,
   'inProgress' : IDL.Null,
 });
-export const Time = IDL.Int;
 export const OrderCategory = IDL.Variant({
   'bedroom' : IDL.Null,
   'bathroom' : IDL.Null,
   'office' : IDL.Null,
+  'painting' : IDL.Null,
   'kitchen' : IDL.Null,
+  'falseCeiling' : IDL.Null,
+  'lighting' : IDL.Null,
   'livingRoom' : IDL.Null,
+  'civilWork' : IDL.Null,
+  'wallDesign' : IDL.Null,
+  'electricalWork' : IDL.Null,
+  'flooring' : IDL.Null,
+  'modularWardrobe' : IDL.Null,
+  'modularWork' : IDL.Null,
 });
 export const Order = IDL.Record({
   'id' : IDL.Nat,
@@ -48,7 +65,10 @@ export const UserProfile = IDL.Record({
 export const idlService = IDL.Service({
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+  'claimAdmin' : IDL.Func([], [IDL.Bool], []),
+  'getAllFeedbacks' : IDL.Func([], [IDL.Vec(Feedback)], ['query']),
   'getAllOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
+  'getApprovedFeedbacks' : IDL.Func([], [IDL.Vec(Feedback)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getMyOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
@@ -63,8 +83,11 @@ export const idlService = IDL.Service({
       [IDL.Opt(UserProfile)],
       ['query'],
     ),
+  'hasAnyAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+  'resetAdmin' : IDL.Func([], [IDL.Bool], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+  'submitFeedback' : IDL.Func([IDL.Text, IDL.Nat, IDL.Text], [IDL.Nat], []),
   'submitOrder' : IDL.Func(
       [
         IDL.Text,
@@ -89,18 +112,35 @@ export const idlFactory = ({ IDL }) => {
     'user' : IDL.Null,
     'guest' : IDL.Null,
   });
+  const Time = IDL.Int;
+  const Feedback = IDL.Record({
+    'id' : IDL.Nat,
+    'name' : IDL.Text,
+    'comment' : IDL.Text,
+    'approved' : IDL.Bool,
+    'timestamp' : Time,
+    'rating' : IDL.Nat,
+  });
   const OrderStatus = IDL.Variant({
     'pending' : IDL.Null,
     'completed' : IDL.Null,
     'inProgress' : IDL.Null,
   });
-  const Time = IDL.Int;
   const OrderCategory = IDL.Variant({
     'bedroom' : IDL.Null,
     'bathroom' : IDL.Null,
     'office' : IDL.Null,
+    'painting' : IDL.Null,
     'kitchen' : IDL.Null,
+    'falseCeiling' : IDL.Null,
+    'lighting' : IDL.Null,
     'livingRoom' : IDL.Null,
+    'civilWork' : IDL.Null,
+    'wallDesign' : IDL.Null,
+    'electricalWork' : IDL.Null,
+    'flooring' : IDL.Null,
+    'modularWardrobe' : IDL.Null,
+    'modularWork' : IDL.Null,
   });
   const Order = IDL.Record({
     'id' : IDL.Nat,
@@ -124,7 +164,10 @@ export const idlFactory = ({ IDL }) => {
   return IDL.Service({
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+    'claimAdmin' : IDL.Func([], [IDL.Bool], []),
+    'getAllFeedbacks' : IDL.Func([], [IDL.Vec(Feedback)], ['query']),
     'getAllOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
+    'getApprovedFeedbacks' : IDL.Func([], [IDL.Vec(Feedback)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getMyOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
@@ -139,8 +182,11 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Opt(UserProfile)],
         ['query'],
       ),
+    'hasAnyAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+    'resetAdmin' : IDL.Func([], [IDL.Bool], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+    'submitFeedback' : IDL.Func([IDL.Text, IDL.Nat, IDL.Text], [IDL.Nat], []),
     'submitOrder' : IDL.Func(
         [
           IDL.Text,

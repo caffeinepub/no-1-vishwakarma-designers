@@ -1,14 +1,17 @@
 import Map "mo:core/Map";
 import Array "mo:core/Array";
 import Iter "mo:core/Iter";
-import Text "mo:core/Text";
-import Order "mo:core/Order";
-import Runtime "mo:core/Runtime";
-import Principal "mo:core/Principal";
 import Time "mo:core/Time";
 import Nat "mo:core/Nat";
+import Text "mo:core/Text";
+import Runtime "mo:core/Runtime";
+import Order "mo:core/Order";
+import Principal "mo:core/Principal";
 import MixinAuthorization "authorization/MixinAuthorization";
+
 import AccessControl "authorization/access-control";
+
+// Add migration with-clause
 
 actor {
   type OrderStatus = {
@@ -23,6 +26,15 @@ actor {
     #kitchen;
     #bathroom;
     #office;
+    #modularWork;
+    #modularWardrobe;
+    #lighting;
+    #flooring;
+    #electricalWork;
+    #civilWork;
+    #falseCeiling;
+    #wallDesign;
+    #painting;
   };
 
   type Order = {
@@ -37,6 +49,15 @@ actor {
     notes : Text;
     status : OrderStatus;
     owner : Principal;
+  };
+
+  type Feedback = {
+    id : Nat;
+    timestamp : Time.Time;
+    name : Text;
+    rating : Nat;
+    comment : Text;
+    approved : Bool;
   };
 
   module OrderModule {
@@ -56,7 +77,39 @@ actor {
 
   let orders = Map.empty<Nat, Order>();
   let userProfiles = Map.empty<Principal, UserProfile>();
+  let feedbacks = Map.empty<Nat, Feedback>();
   var nextOrderId = 0;
+  var nextFeedbackId = 0;
+
+  // Check if any admin has been assigned yet
+  public query func hasAnyAdmin() : async Bool {
+    accessControlState.adminAssigned;
+  };
+
+  // Allow first logged-in user to claim admin if none exists
+  public shared ({ caller }) func claimAdmin() : async Bool {
+    if (caller.isAnonymous()) {
+      return false;
+    };
+    if (accessControlState.adminAssigned) {
+      return false;
+    };
+    accessControlState.userRoles.add(caller, #admin);
+    accessControlState.adminAssigned := true;
+    true;
+  };
+
+  // Reset admin assignment so owner can reclaim access
+  public shared ({ caller }) func resetAdmin() : async Bool {
+    if (caller.isAnonymous()) {
+      return false;
+    };
+    for (principal in accessControlState.userRoles.keys().toArray().vals()) {
+      accessControlState.userRoles.remove(principal);
+    };
+    accessControlState.adminAssigned := false;
+    true;
+  };
 
   // User Profile Management
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
@@ -80,6 +133,39 @@ actor {
     userProfiles.add(caller, profile);
   };
 
+  // Feedback Management
+  public shared ({ caller }) func submitFeedback(name : Text, rating : Nat, comment : Text) : async Nat {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only authenticated users can submit feedback");
+    };
+    if (rating < 1 or rating > 5) {
+      Runtime.trap("Rating must be between 1 and 5");
+    };
+    let feedbackId = nextFeedbackId;
+    let feedback : Feedback = {
+      id = feedbackId;
+      timestamp = Time.now();
+      name = name;
+      rating = rating;
+      comment = comment;
+      approved = true;
+    };
+    feedbacks.add(feedbackId, feedback);
+    nextFeedbackId += 1;
+    feedbackId;
+  };
+
+  public query func getApprovedFeedbacks() : async [Feedback] {
+    feedbacks.values().toArray().filter(func(f) { f.approved }).sort(func(a, b) { Nat.compare(b.id, a.id) });
+  };
+
+  public query ({ caller }) func getAllFeedbacks() : async [Feedback] {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Only admin can view all feedbacks");
+    };
+    feedbacks.values().toArray().sort(func(a, b) { Nat.compare(b.id, a.id) });
+  };
+
   // Order Management
   public shared ({ caller }) func submitOrder(
     name : Text,
@@ -88,7 +174,7 @@ actor {
     address : Text,
     category : OrderCategory,
     budget : Text,
-    notes : Text
+    notes : Text,
   ) : async Nat {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only authenticated users can submit orders");
@@ -117,7 +203,6 @@ actor {
     switch (orders.get(orderId)) {
       case (null) { null };
       case (?order) {
-        // Users can only view their own orders, admins can view all
         if (order.owner != caller and not AccessControl.isAdmin(accessControlState, caller)) {
           Runtime.trap("Unauthorized: Can only view your own orders");
         };
@@ -130,7 +215,6 @@ actor {
     if (not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Only admin can view orders by category");
     };
-
     orders.values().toArray().filter(func(order) { order.category == category }).sort();
   };
 
@@ -138,7 +222,6 @@ actor {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only authenticated users can view their orders");
     };
-
     orders.values().toArray().filter(func(order) { order.owner == caller }).sort();
   };
 
@@ -146,7 +229,6 @@ actor {
     if (not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Only admin can update orders");
     };
-
     switch (orders.get(orderId)) {
       case (null) { Runtime.trap("Order not found") };
       case (?order) {
@@ -159,11 +241,19 @@ actor {
     };
   };
 
+  public shared ({ caller }) func deleteOrder(orderId : Nat) : async Bool {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Only admin can delete orders");
+    };
+    let exists = orders.get(orderId) != null;
+    orders.remove(orderId);
+    exists;
+  };
+
   public query ({ caller }) func getAllOrders() : async [Order] {
     if (not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Only admin can view all orders");
     };
-
     orders.values().toArray().sort();
   };
 };

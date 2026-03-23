@@ -1,29 +1,35 @@
-# NO. 1 Vishwakarma Designers
+# Vishwakarma Design Studio
 
 ## Current State
-New project. No existing implementation.
+Admin panel at /admin has:
+- Internet Identity login
+- Order table with status update (pending/inProgress/completed)
+- Basic stats: total, pending, in progress counts
+- Reset & Claim Admin button
 
 ## Requested Changes (Diff)
 
 ### Add
-- Full interior design ordering website for "NO. 1 Vishwakarma Designers"
-- Hero section with CTA button
-- Category-based ordering: Living Room, Bedroom, Kitchen, Bathroom, Office
-- Each category has a dedicated order form page
-- About/Meet the designer section featuring Vinay Vishwakarma
-- Contact info: 9702930363
-- Order submission with customer name, phone, email, address, design category, budget, notes
-- Admin view for owner to see submitted orders
-- Footer with contact details and links
+- Search bar to filter orders by customer name, phone, or email
+- Filter dropdown by service category and by status
+- Order statistics: completed count, most popular service
+- Export orders as CSV download
+- Delete order button per row
+- Expandable order row or modal to view full customer details (address, notes)
+- Backend: deleteOrder(orderId) function
 
 ### Modify
-- N/A
+- Stats cards: add Completed count and Most Popular Service
+- Orders table: add address/notes view, delete button
 
 ### Remove
-- N/A
+- Nothing removed
 
 ## Implementation Plan
-1. Backend: Store orders with customer info, design category, status. Expose submitOrder, getOrders, getOrdersByCategory APIs.
-2. Frontend: Multi-page layout (Home, Services/Order pages per category, About, Contact).
-3. Hero section, 5-category grid, order form per category, designer profile, footer.
-4. Classic white/blue/black color scheme throughout.
+1. Add `deleteOrder` to backend main.mo
+2. Update frontend AdminPage.tsx:
+   - Add search input and filter dropdowns (category, status)
+   - Expand stats to 5 cards (total, pending, in progress, completed, top service)
+   - Add expandable detail row showing address and notes
+   - Add delete button per row
+   - Add Export CSV button

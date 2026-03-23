@@ -4,6 +4,7 @@ import {
   Instagram,
   Mail,
   MapPin,
+  MessageCircle,
   Phone,
   Twitter,
 } from "lucide-react";
@@ -19,11 +20,8 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <div className="mb-4">
-              <span className="block text-xs font-bold tracking-[0.3em] text-primary">
-                NO. 1
-              </span>
               <span className="block text-xl font-display font-bold text-white tracking-wide">
-                VISHWAKARMA DESIGNERS
+                VISHWAKARMA DESIGN STUDIO
               </span>
             </div>
             <p className="text-sm text-white/70 leading-relaxed">
@@ -89,14 +87,32 @@ export default function Footer() {
                 </div>
               </li>
               <li className="flex items-start gap-3">
+                <MessageCircle
+                  className="h-4 w-4 mt-0.5 flex-shrink-0"
+                  style={{ color: "#25D366" }}
+                />
+                <div>
+                  <p className="text-xs text-white/50 mb-0.5">WhatsApp</p>
+                  <a
+                    href="https://wa.me/919702930363"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-white hover:text-green-400 transition-colors"
+                    data-ocid="footer.link"
+                  >
+                    WhatsApp: 9702930363
+                  </a>
+                </div>
+              </li>
+              <li className="flex items-start gap-3">
                 <Mail className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="text-xs text-white/50 mb-0.5">Email</p>
                   <a
-                    href="mailto:info@vishwakarmadesigners.com"
+                    href="mailto:info@vishwakarmadesignstudio.com"
                     className="text-sm text-white hover:text-primary transition-colors"
                   >
-                    info@vishwakarmadesigners.com
+                    info@vishwakarmadesignstudio.com
                   </a>
                 </div>
               </li>
@@ -104,7 +120,7 @@ export default function Footer() {
                 <MapPin className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="text-xs text-white/50 mb-0.5">Owner</p>
-                  <p className="text-sm text-white">Vinay Vishwakarma</p>
+                  <p className="text-sm text-white">Virendra Vishwakarma</p>
                 </div>
               </li>
             </ul>
@@ -113,7 +129,7 @@ export default function Footer() {
 
         <div className="border-t border-white/10 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-xs text-white/40">
-            © {year} NO. 1 Vishwakarma Designers. All rights reserved.
+            © {year} Vishwakarma Design Studio. All rights reserved.
           </p>
           <p className="text-xs text-white/40">
             Built with ❤️ using{" "}
