@@ -80,9 +80,15 @@ export default function Footer() {
                   <p className="text-xs text-white/50 mb-0.5">Phone</p>
                   <a
                     href="tel:9702930363"
-                    className="text-sm text-white hover:text-primary transition-colors"
+                    className="text-sm text-white hover:text-primary transition-colors block"
                   >
                     9702930363
+                  </a>
+                  <a
+                    href="tel:9930051681"
+                    className="text-sm text-white hover:text-primary transition-colors block mt-1"
+                  >
+                    9930051681
                   </a>
                 </div>
               </li>

@@ -48,13 +48,22 @@ export default function Header() {
 
           {/* Actions */}
           <div className="hidden md:flex items-center gap-3">
-            <a
-              href="tel:9702930363"
-              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors"
-            >
-              <Phone className="h-4 w-4" />
-              <span>9702930363</span>
-            </a>
+            <div className="flex flex-col gap-0.5">
+              <a
+                href="tel:9702930363"
+                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors"
+              >
+                <Phone className="h-4 w-4" />
+                <span>9702930363</span>
+              </a>
+              <a
+                href="tel:9930051681"
+                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors"
+              >
+                <Phone className="h-4 w-4" />
+                <span>9930051681</span>
+              </a>
+            </div>
             <Link to="/order/$category" params={{ category: "livingRoom" }}>
               <Button
                 size="sm"
@@ -103,6 +112,22 @@ export default function Header() {
                   {link.label}
                 </a>
               ))}
+              <div className="flex flex-col gap-1">
+                <a
+                  href="tel:9702930363"
+                  className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  <Phone className="h-4 w-4" />
+                  <span>9702930363</span>
+                </a>
+                <a
+                  href="tel:9930051681"
+                  className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  <Phone className="h-4 w-4" />
+                  <span>9930051681</span>
+                </a>
+              </div>
               <Link
                 to="/order/$category"
                 params={{ category: "livingRoom" }}
